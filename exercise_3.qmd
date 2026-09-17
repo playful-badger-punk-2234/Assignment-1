@@ -4,4 +4,4 @@ subtitle: "Due date: Monday September 28, 2026"
 format: pdf
 ---
 
-## Exercise I. Experimental data on heritability. A components of variance model.
+## Exercise III. Experimental data on saws.
