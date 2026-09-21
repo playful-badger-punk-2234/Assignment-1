@@ -5,3 +5,14 @@ format: pdf
 ---
 
 ## Exercise I. Experimental data on heritability. A components of variance model.
+
+Objectives:
+
+- Estimate the percentage of conceptions with a confidence interval.
+
+- Report the variability in the percentages due to bull-to-bull variability and within-bull variability (components of variance). And the heritability parameter.
+
+```{r}
+
+
+```
