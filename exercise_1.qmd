@@ -1,7 +1,17 @@
 ---
 title: "Assignment 1 - 02429 Analysis of correlated data: Linear mixed models"
 subtitle: "Due date: Monday September 28, 2026"
+author:
+  - A
+  - B
+  - name: Rune Ringgaard Jørgensen
+    email: runjor@food.dtu.dk
+    telephone: +45 20 72 15 40
+    affiliations:
+      name: DTU National Food Institute
 format: pdf
+execute: 
+  echo: false
 ---
 
 ## Exercise I. Experimental data on heritability. A components of variance model.
@@ -13,6 +23,34 @@ Objectives:
 - Report the variability in the percentages due to bull-to-bull variability and within-bull variability (components of variance). And the heritability parameter.
 
 ```{r}
+#| label: load
+#| include: false
+
+source("R/exercise-1.R")
+
+```
+In @fig-boxchart you see stuff.
+
+```{r}
+#| label: fig-boxchart
+#| echo: false
+#| fig-cap: Mean conception of bulls 1-6. Red dots show bull means.
+#| fig-width: 6
+#| fig-asp: .5625
+
+plot_bulls
+
+```
+
+
+```{r}
+#| label: fig-observations
+#| echo: false
+#| fig-cap: Observations of conception for bulls 1-6. Red dots show bull means.
+#| fig-width: 6
+#| fig-asp: .75
+
+plot_observations
 
 
 ```

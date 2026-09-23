@@ -5,6 +5,7 @@
 library(MASS)
 library(emmeans) #For computing conditional/marginal means
 library(multcomp)
+library(ggplot2)
 
 rm(list=(ls()))
 
@@ -30,11 +31,62 @@ str(df)
 df$bull<- as.factor(df$bull)
 str(df)
 
+tapply(df$perc, df$bull, mean)
+
+library(dplyr)
+
+# Calculate bull-specific means
+means <- df %>%
+  group_by(bull) %>%
+  summarise(mean_perc = mean(perc), .groups = "drop")
+
+# Plot
+plot_bulls <- ggplot(df, aes(x = factor(bull), y = perc)) +
+  # geom_boxplot(fill = "lightblue") +
+  geom_boxplot(
+    fill = 2:7,
+    whisker.linetype = "dashed",
+    whisker.linewidth = .7,
+    staplewidth = .5
+    ) +
+  # geom_boxplot(aes(fill = bull)) +
+  geom_point(
+    data = means,
+    aes(y = mean_perc),
+    shape = 21,
+    size = 2.5,
+    fill = "red"
+  ) +
+  labs(
+    x = "Bull",
+    y = "Percentage of conceptions"
+  ) +
+  theme_light()
+
+plot_observations <- ggplot(df, aes(factor(bull), y = perc)) +
+  geom_jitter(
+    width = 0.01,
+    colour = bull,
+    size = 3
+    ) +
+  geom_point(
+    data = means,
+    aes(y = mean_perc),
+    shape = 23,
+    size = 3,
+    fill = "red"
+  ) +
+  labs(
+    x = "Bull",
+    y = "Percentage of conceptions"
+  ) +
+  theme_light()
+
 # Exploratory analysis
 
 (mean<-mean(df$perc))
 (means<-with(df,tapply(perc, bull, mean)))
-tapply(df$perc, df$bull, mean)
+
 
 (s2<-var(df$perc))
 #(s2_i<-(vars<-tapply(df$perc, df$bull, var)))
@@ -47,12 +99,11 @@ library(tidyverse)
 
 
 # Exploratory plots
-{par(mfrow=c(1,2))
-  {with(df, boxplot(perc ~ bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5))
+par(mfrow=c(1,2))
+  with(df, boxplot(perc ~ bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5))
     #alternatively:
     # boxplot(df$perc ~ df$bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5)
     points(1:6, means, pch = 23, cex = 0.95, bg = "red")
-}
 
 
   with(df, stripchart(perc ~ bull, xlab='bull', ylab='% of conceptions',
@@ -62,8 +113,19 @@ library(tidyverse)
 
 
   par(mfrow=c(1,1))
-}
 # Fitting two models
+
+library(lme4)
+
+m0 <- lm(perc ~ 1, data = df)
+
+m1 <- lmer(perc ~ (1 | bull),
+           data = df,
+           REML = FALSE)
+
+VarCorr(m1)
+fixef(m1)
+
 
 # Model 1. Simple linear model,
 # It ignores that the percentages of the same bull are correlated observations.
@@ -141,7 +203,7 @@ dotplot(ranef(m_lmer, condVar=TRUE), strip = FALSE)
 
 predict(m_lmer)
 par(mai=c(1,1,1,1))
-plot(predict(m_lmer), m_lm$fitted.values, col=df$bull, pch=19)
+plot(predict(m_lmer), m_lm_null$fitted.values, col=df$bull, pch=19)
 abline(0,1)
 
 str(ranef(m_lmer))
