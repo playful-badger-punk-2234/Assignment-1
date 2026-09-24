@@ -2,55 +2,94 @@
 title: "Assignment 1 - 02429 Analysis of correlated data: Linear mixed models"
 subtitle: "Due date: Monday September 28, 2026"
 author:
-  - A
-  - B
+  - name: Lachlan Casey
+    email: s263853@student.dtu.dk
+  - name: Boglárka Dorottya Kováts
+    email: s262008@student.dtu.dk
   - name: Rune Ringgaard Jørgensen
     email: runjor@food.dtu.dk
-    telephone: +45 20 72 15 40
-    affiliations:
-      name: DTU National Food Institute
-format: pdf
+format:
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{float}
 execute: 
   echo: false
 ---
 
 ## Exercise I. Experimental data on heritability. A components of variance model.
 
-Objectives:
+<!-- Objectives: -->
 
-- Estimate the percentage of conceptions with a confidence interval.
+<!-- - Estimate the percentage of conceptions with a confidence interval. -->
 
-- Report the variability in the percentages due to bull-to-bull variability and within-bull variability (components of variance). And the heritability parameter.
+<!-- - Report the variability in the percentages due to bull-to-bull variability and within-bull variability (components of variance). And the heritability parameter. -->
 
 ```{r}
-#| label: load
+#| label: load data
 #| include: false
 
 source("R/exercise-1.R")
 
 ```
-In @fig-boxchart you see stuff.
 
+Exploring the data, plots are created to visualise the data, shown in @fig-bulls-plots. @fig-boxplot-bulls shows the percentage of conception by bull, displayed in box plot. @fig-observations shows observations of conception for each sample of bull semen.
+
+::: {#fig-bulls-plots layout="[[48,-4,48]]" fig-pos="H"}
 ```{r}
-#| label: fig-boxchart
+#| label: fig-boxplot-bulls
 #| echo: false
-#| fig-cap: Mean conception of bulls 1-6. Red dots show bull means.
-#| fig-width: 6
-#| fig-asp: .5625
+#| fig-cap: Mean conception of bulls. Red dots = means.
+#| fig-width: 2.5
+#| fig-asp: 1.2
 
 plot_bulls
 
 ```
 
-
 ```{r}
 #| label: fig-observations
 #| echo: false
-#| fig-cap: Observations of conception for bulls 1-6. Red dots show bull means.
-#| fig-width: 6
-#| fig-asp: .75
+#| fig-cap: Observations of conception for bulls. Red squares = means.
+#| fig-width: 2.5
+#| fig-asp: 1.2
+#| fig-align: center
 
 plot_observations
 
-
 ```
+
+Conception data visualised by bull.
+:::
+
+### Estimation of percentage of conception
+
+Considering the bulls as a random sample of a population, and assuming that observations from each bull are correlated, the percentage of conception can be estimated with a random-effects model with bull as a random factor:
+
+$$
+y_{ij}=μ+b_i​+e_{ij}​
+$$ {#eq-model}
+
+Where:
+
+$y_{ij}$ =
+
+: conception percentage for sample $j$ from bull $i$
+
+$μ$ =
+
+: overall mean conception percentage
+
+$b_i$ =
+
+: random effect of bull $i$
+
+$e_{ij}$ =
+
+: residual varition
+
+ 
+
+The estimation of percentage of conception with a 95% confidence interval is:
+
+`r estimate`

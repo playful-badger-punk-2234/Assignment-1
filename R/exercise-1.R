@@ -40,21 +40,24 @@ means <- df %>%
   group_by(bull) %>%
   summarise(mean_perc = mean(perc), .groups = "drop")
 
+
+# Exploratory analysis
+
 # Plot
 plot_bulls <- ggplot(df, aes(x = factor(bull), y = perc)) +
   # geom_boxplot(fill = "lightblue") +
   geom_boxplot(
     fill = 2:7,
     whisker.linetype = "dashed",
-    whisker.linewidth = .7,
-    staplewidth = .5
+    whisker.linewidth = .4,
+    staplewidth = .4
     ) +
   # geom_boxplot(aes(fill = bull)) +
   geom_point(
     data = means,
     aes(y = mean_perc),
     shape = 21,
-    size = 2.5,
+    size = 2,
     fill = "red"
   ) +
   labs(
@@ -65,15 +68,15 @@ plot_bulls <- ggplot(df, aes(x = factor(bull), y = perc)) +
 
 plot_observations <- ggplot(df, aes(factor(bull), y = perc)) +
   geom_jitter(
-    width = 0.01,
+    width = 0.1,
     colour = bull,
-    size = 3
+    size = 2
     ) +
   geom_point(
     data = means,
     aes(y = mean_perc),
-    shape = 23,
-    size = 3,
+    shape = 22,
+    size = 2,
     fill = "red"
   ) +
   labs(
@@ -81,8 +84,6 @@ plot_observations <- ggplot(df, aes(factor(bull), y = perc)) +
     y = "Percentage of conceptions"
   ) +
   theme_light()
-
-# Exploratory analysis
 
 (mean<-mean(df$perc))
 (means<-with(df,tapply(perc, bull, mean)))
@@ -93,26 +94,26 @@ plot_observations <- ggplot(df, aes(factor(bull), y = perc)) +
 (s2_i<-tapply(df$perc, df$bull, var))
 (n_i<-table(df$bull))
 
-stuff <- cbind(n_i, means, s2_i)
-
 library(tidyverse)
+#
+# # Exploratory plots
+# par(mfrow=c(1,2))
+#   with(df, boxplot(perc ~ bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5))
+#     #alternatively:
+#     # boxplot(df$perc ~ df$bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5)
+#     points(1:6, means, pch = 23, cex = 0.95, bg = "red")
+#
+#
+#   with(df, stripchart(perc ~ bull, xlab='bull', ylab='% of conceptions',
+#                       vertical=TRUE,cex=1.2,pch=16, las=1, col=2:5))
+#   points(1:6, means, pch = 17, cex = 1.5, bg = "black")
+#   abline(h=mean(df$perc), lty = 2)
+#
+#
+#   par(mfrow=c(1,1))
+#
+#
 
-
-# Exploratory plots
-par(mfrow=c(1,2))
-  with(df, boxplot(perc ~ bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5))
-    #alternatively:
-    # boxplot(df$perc ~ df$bull, xlab='bull', ylab='% of conceptions', las=1, col=2:5)
-    points(1:6, means, pch = 23, cex = 0.95, bg = "red")
-
-
-  with(df, stripchart(perc ~ bull, xlab='bull', ylab='% of conceptions',
-                      vertical=TRUE,cex=1.2,pch=16, las=1, col=2:5))
-  points(1:6, means, pch = 17, cex = 1.5, bg = "black")
-  abline(h=mean(df$perc), lty = 2)
-
-
-  par(mfrow=c(1,1))
 # Fitting two models
 
 library(lme4)
@@ -154,9 +155,11 @@ sqrt(var(df$perc)/35)
 library(lme4)
 
 m_lmer<-lmer(perc ~ (1|bull), data=df)
-m_lmer<-lmer(perc ~ 1 + (1|bull), data=df)
-#str(m_lmer) #A lot of information!
-#m_lmer@beta
+summary(m_lmer) #A lot of information!
+m_lmer@beta
+
+
+
 
 summary(m_lmer)
 
@@ -167,15 +170,22 @@ confint(m_lmer)
 # Calculate profile likelihood confidence intervals
 confint(m_lmer, method = "profile")
 
-# Calculate Wald confidence interval
+# Calculate confidence interval
 conf <- confint(m_lmer, parm = "(Intercept)", method = "profile")
-confint(m_lmer, parm = "(Intercept)", method = "Wald")
 
-conf[1,2]
+estimate <- paste0(round(m_lmer@beta, 2), "% (", round(conf[1,1], 2), " - ", round(conf[1,2], 2), ")")
 
-cat(paste0("Estimate: ", round(m_lmer@beta, 2), "% (", round(conf[1,1], 2), " - ", round(conf[1,2], 2), ")"))
+VarCorr(m_lmer)
 
-fin <- (cbind(estimate, conf)) %>% as.data.frame()
+vc <- as.data.frame(VarCorr(m_lmer))
+
+sigma_bull  <- vc$vcov[1]
+sigma_within <- vc$vcov[2]
+
+ICC <- sigma_bull / (sigma_bull + sigma_within)
+ICC
+
+
 
 76.8+248.7 #=325.5
 
@@ -189,8 +199,9 @@ anova(m_lmer)
 
 # Random effects
 #See confidence intervals:
-confint(m_lmer, oldNames=F)
 confint(m_lmer, signames=F)
+
+cbind(coef(m_lmer), confint(m_lmer, level=0.95))
 cbind(coef(m_lm_null), confint(m_lm_null, level=0.95))
 
 #Notice that the CI are wider in the random effects setting than in the fixed.
@@ -213,6 +224,7 @@ qqnorm(ranef(m_lmer)$bull[,"(Intercept)"], main="Random effects", pch=19, cex=.5
 qqline(ranef(m_lmer)$bull[,"(Intercept)"])
 qqnorm(resid(m_lmer), main="Residuals",pch=19, cex=.5)
 qqline(resid(m_lmer))
+par(mfrow=c(1,1))
 
 
 #----end----
