@@ -1,15 +1,15 @@
 ---
 title: "Assignment 1 - 02429 Analysis of correlated data: Linear mixed models"
-subtitle: "Due date: Monday September 28, 2026"
-author:
-  - name: Lachlan Casey
-    email: s263853@student.dtu.dk
-  - name: Boglárka Dorottya Kováts
-    email: s262008@student.dtu.dk
-  - name: Rune Ringgaard Jørgensen
-    email: runjor@food.dtu.dk
+subtitle: "Group 4"
+date: "Monday September 28, 2026"
+author: "Lachlan Casey, Boglárka Dorottya Kováts, Rune Ringgaard Jørgensen"
+header: "Assignment 1 - Group 4"
 format:
   pdf:
+    geometry:
+     - left=2cm
+     - right=2cm
+     - bottom=3cm
     include-in-header:
       text: |
         \usepackage{float}
@@ -19,7 +19,7 @@ bibliography: references.bib
 ---
 
 ```{r}
-#| label: load data
+#| label: load data 1
 #| include: false
 
 
@@ -29,21 +29,30 @@ source("R/exercise_1.R")
 
 # Exercise 1
 
-
 ## Visualisation
 
+Exploring the data, @fig-boxplot-bulls shows the percentage of conception by bull, displayed in a box plot. @fig-boxplot-bulls shows a large variance in the samples from bull 4, while others, e.g., bull 3 have a lower variance. Furthermore, bull 5 has a high percentage of conception compared to the rest of the sample.
 
 ```{r}
+#| label: fig-boxplot-bulls
+#| echo: false
+#| fig-cap: Percentage of conception of bulls.
+#| fig-asp: .8
+#| fig-pos: h
 
-boxplot(perc ~ bull, data = df, xlab = 'Bull', ylab = '% of Conceptions', las=1, col=2:7, main = "Box Plot of Bull Conceptions Rates")
+boxplot(perc ~ bull, data = df, xlab = 'Bull', ylab = '% of Conceptions', las=1, col=2:7)
 
 ```
 
-## Model
+## Estimation of percentage of conception
+
+Considering the bulls as a random sample of a population, and assuming that observations from each bull are correlated, the percentage of conception can be estimated with a random-effects model with bull as a random factor.
+
+### Model
 
 $$
 y_{ij} = \mu + a_{i} + \epsilon_{ij}
-$$
+$$ {#eq-model1}
 
 Where:
 
@@ -55,37 +64,85 @@ Where:
 
 - $\epsilon_{ij}$ is the residual measurement error for each specific sample, assumed to be normally distributed with a mean of zero and a variance of $\sigma_{\epsilon}^{2}$ ($\epsilon_{ij} \sim N\left( 0,\sigma_{\epsilon}^{2} \right)$).
 
+ 
+
 ## Results
 
-Intercept ($\mu)$ = 53.318
+$\mu=$ **`r estimate`**
 
-Bull-to-bull variability (${\widehat{\sigma}}_{a}^{2}$): 76.8
+Bull-to-bull variability (${\widehat{\sigma}}_{a}^{2}$): `r round(sigma_bull, 2)`
 
-Within-bull/Residual variability (${\widehat{\sigma}}_{\epsilon}^{2}$): 248.7
+Within-bull/Residual variability (${\widehat{\sigma}}_{\epsilon}^{2}$): `r round(sigma_within, 2)`
 
-$h = \frac{4\sigma_{a}^{2}}{\sigma_{a}^{2} + \sigma_{\epsilon}^{2}}$.
+To calculate the heritability parameter, $h$, @eq-heritability is used.
 
-h = 94.39%
+$$
+h = \frac{4\sigma_{a}^{2}}{\sigma_{a}^{2} + \sigma_{\epsilon}^{2}}
+$$ {#eq-heritability}
 
-95% Confidence interval of standard deviation of Random Effects
+$h$ = `r round(heritability * 100, 2)`%
 
-Between Bull-to-bull: (0.000, 19.35)%
-
-Within Bull-to-bull: (12.45, 20.94)%
-
-Overall Average rate of Conception: (43.68, 63.05)%
-
-Summary :
+::: {}
+:::
 
 # Exercise 2
 
+```{r}
+#| label: load data 2
+#| include: false
 
 
-## Model
+source("R/exercise_2.R")
 
-Initial Model : With Interactions
+```
 
-$$\log Y_{ijk} = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + d_{k} + \epsilon_{ijk}$$
+## Visualisation
+
+@fig-rat-plots shows boxplots of breaking strength by site (@fig-site), and by treatment (@fig-treat). @fig-treat could indicate that the treatment does not increase breaking strength, or even decreases it.
+
+::: {#fig-rat-plots layout="[[48,-4,48]]" fig-pos="H"}
+```{r}
+#| label: fig-site
+#| echo: false
+#| fig-asp: 1.2
+#| fig-cap: Strength by Site
+
+# Set up a 1x2 grid for side-by-side boxplots
+# par(mfrow = c(1, 2))
+
+# Boxplot: Raw log(Strength) across the 5 Sites
+boxplot(logY ~ site, data = rats_data,
+        xlab = 'Site on Back', ylab = 'log(Breaking Strength)',
+        col = rainbow(5))
+points(1:5, means_site, pch = 23, bg = "black") # Add diamond markers for the means
+```
+
+```{r}
+#| label: fig-treat
+#| echo: false
+#| fig-asp: 1.2
+#| fig-cap: Strength by Treatment
+# Boxplot: Raw log(Strength) across the 2 Treatments
+boxplot(logY ~ treat, data = rats_data,
+        xlab = 'Treatment', ylab = 'log(Breaking Strength)',
+        col = c("lightblue", "lightgreen"))
+points(1:2, means_treat, pch = 23, bg = "black")
+
+# Reset the plot grid to 1x1
+# par(mfrow = c(1, 1))
+
+```
+
+Visualisations of rat data
+:::
+
+## Task i)
+
+An initial linear mixed model, @eq-model2a-lmm, is fitted with interactions between Treatment and Site.
+
+$$
+\log Y_{ijk} = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + d_{k} + \epsilon_{ijk}
+$$ {#eq-model2a-lmm}
 
 Where:
 
@@ -103,19 +160,41 @@ Where:
 
 - $\epsilon_{ijk}$ is the residual measurement error, assumed to be normally distributed with a mean of zero and a variance of $\sigma^{2}$ ($\epsilon_{ijk} \sim N\left( 0,\sigma^{2} \right)$).
 
-Running drop1 shows a p-value value of 0.4292 for the interaction $(\alpha\beta)_{ij}$ so the interaction is insignificant indicating it can be dropped.
+Running an F-test (`drop1`) shows a p-value value of 0.4292 for the interaction $(\alpha\beta)_{ij}$, i.e., the interaction is insignificant indicating it can be dropped.
 
-## Final Model
+A final linear mixed model, @eq-model2b-lmm, is fitted, omitting the interaction between Treatment and Site and keeping rat as a random effect.
 
-$$\log Y_{ijk} = \mu + \alpha_{i} + \beta_{j} + d_{k} + \epsilon_{ijk}$$
+$$
+\log Y_{ijk} = \mu + \alpha_{i} + \beta_{j} + d_{k} + \epsilon_{ijk}
+$$ {#eq-model2b-lmm}
 
-![](media/media/image3.png){width="3.238993875765529in" height="1.5157895888014in"}
+Analysis of variance (ANOVA) of the final model showed that *site* was statistically significant with $p =$ `r round(lmm2_anova[1,6], 4)` and is likely to effect the logarithm of the response $Y$, unlike *treatment* with $p =$ `r round(lmm2_anova[2,6], 4)`, see @tbl-rat-anova.
 
-![](media/media/image4.png){width="3.1157895888014in" height="0.4208005249343832in"}
+```{r}
+#| tbl-cap: Analysis of variance (ANOVA) of @eq-model2b-lmm.
+#| label: tbl-rat-anova
 
-**Part i)** As can be seen site has a statistically significant p-value of 0.0087 and is likely to effect the logarithm of the response Y unlike treatment type which has a p-value of 0.1254 which is \>0.05. The variance from rat to rat is 0.1476 and the variance of the residual measurement is 0.2110. The effect of each site can be seen above relative to the intercept which is site 1. Sites 2,3,4 increase the logarithm of the response where site 5 decreases the logarithm of the response. The treatment which is deemed insignificant also decreases the logarithmic the response.
+library(knitr)
 
-**Part ii)**
+lmm2_anova %>% 
+  rename('p-value' = `Pr(>F)`) %>% 
+  kable()
+
+```
+
+The variance from rat to rat is `r round(vars[1, "vcov"], 4)` and the variance of the residual measurement is `r round(vars[2, "vcov"], 4)`. The effect of each site can be seen in @tbl-rat-coef, relative to the intercept which is site 1. Sites 2,3,4 increase the logarithm of the response where site 5 decreases the logarithm of the response. The treatment which is deemed insignificant also decreases the logarithmic response.
+
+```{r}
+#| tbl-cap: Fixed effects coefficients of @eq-model2b-lmm.
+#| label: tbl-rat-coef
+
+m2_coef %>% 
+  rename('p-value' = `Pr(>F)`) %>% 
+  kable()
+
+```
+
+## Task ii)
 
 95% Confidence Interval
 
@@ -147,7 +226,26 @@ The linear model predicts the treatment is significant with p-value 0.0138 and t
 
 # Exercise 3
 
-Visualisation of Data: ![](media/media/image11.png){width="6.268055555555556in" height="3.7569444444444446in"}
+```{r}
+#| label: load data 3
+#| include: false
+
+
+source("R/exercise_3.R")
+
+```
+
+```{r}
+
+# Exploratory Plots
+par(mfrow = c(1, 3))
+boxplot(ly ~ brand, data = saw_data, col = "lightblue", main = "log(Time) by Brand")
+boxplot(ly ~ bark, data = saw_data, col = "lightgreen", main = "log(Time) by Bark")
+boxplot(ly ~ species, data = saw_data, col = "lightpink", main = "log(Time) by Species")
+par(mfrow = c(1, 1))
+
+
+```
 
 Model:
 

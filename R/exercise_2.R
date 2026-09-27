@@ -2,9 +2,10 @@
 library(lme4)
 library(multcomp)
 library(lmerTest)
+library(ggplot2)
 library(emmeans)
 library(patchwork)
-
+library(tidyverse)
 
 
 
@@ -58,8 +59,13 @@ drop1(m1, test = "F")
 
 # As the interaction p-value is > 0.05, reduce to the additive model
 m2 <- lmer(logY ~ site + treat + (1 | rat), data = rats_data)
-summary(m2)
-anova(m2)
+m2_sum <- summary(m2)
+
+m2_coef <- m2_sum$coefficients %>% as.data.frame()
+
+vars <- as.data.frame(VarCorr(m2))
+
+lmm2_anova <- anova(m2)
 #drop1(m2) #equivelent
 
 ## Task ii ----------------------------------------------------------------
