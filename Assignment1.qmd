@@ -10,6 +10,7 @@ format:
      - left=2cm
      - right=2cm
      - bottom=3cm
+    fig-pos: h
     include-in-header:
       text: |
         \usepackage{float}
@@ -40,7 +41,9 @@ Exploring the data, @fig-boxplot-bulls shows the percentage of conception by bul
 #| fig-asp: .8
 #| fig-pos: h
 
+par(mai=c(1, 1, .25, 0.5))
 boxplot(perc ~ bull, data = df, xlab = 'Bull', ylab = '% of Conceptions', las=1, col=2:7)
+par(mai=c(1, 1, 1, 1))
 
 ```
 
@@ -189,40 +192,71 @@ The variance from rat to rat is `r round(vars[1, "vcov"], 4)` and the variance o
 #| label: tbl-rat-coef
 
 m2_coef %>% 
-  rename('p-value' = `Pr(>F)`) %>% 
+  rename('p-value' = last_col()) %>% 
   kable()
 
 ```
 
 ## Task ii)
 
-95% Confidence Interval
+Site 5 exhibited the lowest estimated marginal mean, as seen in @fig-emm.
 
-![](media/media/image5.png){width="4.7944892825896765in" height="3.0421052055993in"}
+```{r}
+#| label: fig-emm
+#| fig-cap: Estimated Marginal Mean of logY
+#| fig-pos: h
 
-![](media/media/image6.png){width="5.2157895888014in" height="3.309420384951881in"}
+plot(site_means, comparisons = TRUE,
+     xlab = "EMM",
+     ylab = "Site on Back") +
+  theme(plot.title = element_text(hjust = 0.5))
 
-As can be seen in interactions with site 5, all interactions Confidence intervals don't contain 0, except 5-1 which does contain 0. So there may be no statistical difference between site 5 and 1. But site 5 is different from 2,3 and 4.
+```
 
-**Part iii)**
+```{r}
+#| label: fig-tukey
+#| fig-cap: "95% family-wise confidence level: Site Differences"
+#| fig-pos: H
+#| fig-asp: .6
 
-Fitting a linear model suggest the treatment is significantly significant due to the linear model underestimating the "true" variance which the LMM takes into account as can be seen below. State p-values
+par(mai=c(1, 1, .25, 0.5))
+plot(mult_site, col=2:11,
+     main = "")
+par(mai=c(1, 1, 1, 1))
 
-![](media/media/image7.png){width="2.0421052055993in" height="0.6294192913385827in"}
+```
 
-Drop1 of linear model:
+As can be seen in @fig-tukey, the pairwise comparisons involving site 5 showed that the 95% confidence intervals for the comparisons between site 5 and sites 2, 3, and 4 did not include zero, indicating significant differences. In contrast, the confidence interval for the comparison between sites 5 and 1 included zero, indicating no statistically significant difference between these two sites.
 
-![](media/media/image8.png){width="2.7604385389326334in" height="0.22631561679790027in"}
+## Task iii)
 
-Drop1 of LMM:
+Fitting a linear model (@eq-rat-lm) suggest the *treatment* is significant due to the linear model underestimating the "true" variance which the LMM takes into account as can be seen in @tbl-lmfit-coef.
 
-![](media/media/image9.png){width="3.4894739720034997in" height="0.5385367454068242in"}
+$$
+\log(Y) = \mu + \text{site} + \text{treat} + \varepsilon
+$$ {#eq-rat-lm}
 
-Comparison:
+None of the p-values indicate any statistical significance in @tbl-lmfit-coef.
 
-The linear model predicts the treatment is significant with p-value 0.0138 and that site is not with p-value 0.1341. But the LMM predicts the "opposite". The linear model fits the data
+```{r}
+#| label: tbl-lmfit-coef
+#| tbl-cap: "Coefficients of a fitted linear model."
 
-![](media/media/image10.png){width="4.0479429133858265in" height="2.5684208223972003in"}
+lmcoef <- lm_fit_sum$coefficients %>% 
+  as.data.frame()
+
+lmcoef <- lmcoef[1:5,]
+
+lmcoef %>% 
+  rename("p-value" = last_col()) %>% 
+  kable()
+
+```
+
+
+F-test of the linear model, @eq-rat-lm, shows that reducing the model by removing *site* is possible ($p$ = `r signif(var_p[2,1], 3)`) and that *treatment* is significant ($p$ = `r signif(var_p[3,1], 3)`).
+
+Conversely, as shown previously in the analysis of variance of the LMM model, @tbl-rat-anova, *site* is a statistically significant variable ($p$ = `r signif(lmm2_anova[1,6], 3)`) and *treatment* is not significant ($p$ = `r signif(lmm2_anova[2,6], 3)`), thus showing the opposite result of @eq-rat-lm.
 
 # Exercise 3
 
@@ -230,15 +264,19 @@ The linear model predicts the treatment is significant with p-value 0.0138 and t
 #| label: load data 3
 #| include: false
 
-
 source("R/exercise_3.R")
 
 ```
 
 ```{r}
+#| label: fig-explore-saw
+#| fig-pos: H
+#| fig-cap: Exploratory plots of the "Saw" data.
+#| fig-asp: .8
 
 # Exploratory Plots
-par(mfrow = c(1, 3))
+par(mfrow = c(1, 3),
+    mai=c(.7, .6, .25, 0.2))
 boxplot(ly ~ brand, data = saw_data, col = "lightblue", main = "log(Time) by Brand")
 boxplot(ly ~ bark, data = saw_data, col = "lightgreen", main = "log(Time) by Bark")
 boxplot(ly ~ species, data = saw_data, col = "lightpink", main = "log(Time) by Species")
@@ -249,7 +287,9 @@ par(mfrow = c(1, 1))
 
 Model:
 
-$$\log\left( y_{ijklm} \right) = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + \gamma_{k} + t_{l} + s_{m} + \epsilon_{ijklm}$$
+$$
+\log\left( y_{ijklm} \right) = \mu + \alpha_{i} + \beta_{j} + (\alpha\beta)_{ij} + \gamma_{k} + t_{l} + s_{m} + \epsilon_{ijklm}
+$$ {#eq-saw-lmm}
 
 Where:
 
@@ -271,15 +311,21 @@ Where:
 
 - $\epsilon_{ijklm}$ is the residual measurement error, assumed to be normally distributed with a mean of zero and a variance of $\sigma^{2}$ ($\epsilon_{ijklm} \sim N\left( 0,\sigma^{2} \right)$).
 
-Fitting this model shows the interaction is not necessary with a p-value of 0.8730176 on the interaction when performing a F-test
+Fitting this model shows the interaction is not necessary ($p$ = `r signif(drop1_m1[2,6], 3)`)  on the interaction when performing a F-test. Thus, the model is reduced to a final model, @eq-saw-final-lmm:
 
-Final Model:
-
-$$\log\left( y_{ijklm} \right) = \mu + \alpha_{i} + \beta_{j} + \gamma_{k} + t_{l} + s_{m} + \epsilon_{ijklm}$$
+$$
+\log\left( y_{ijklm} \right) = \mu + \alpha_{i} + \beta_{j} + \gamma_{k} + t_{l} + s_{m} + \epsilon_{ijklm}
+$$ {#eq-saw-final-lmm}
 
 ![](media/media/image12.png){width="4.386502624671916in" height="2.113063210848644in"}
 
-Findings:
+## Findings from the additive model
+
+```{r}
+
+
+
+```
 
 Fixed Effects : Brand appears to not be significantly significant with the others being significant.
 

@@ -81,9 +81,9 @@ summary(site_means)
 
 # Plot Site means 95% CI
 mult_site <- glht(m2, linfct = mcp(site = "Tukey"))
-par(mai=c(1, 1.25, 1, 0.5))
+par(mai=c(1, 1, .5, 0.5))
 plot(mult_site, col=2:11,
-     main = "95% family-wise confidence level: Site Differences")
+     main = "")
 par(mai=c(1, 1, 1, 1))
 
 
@@ -91,9 +91,11 @@ par(mai=c(1, 1, 1, 1))
 # Ignoring the Random Effect
 # Fit a standard linear model without the (1 | rat) term to replicate the analytical error
 lm_fit <- lm(logY ~ site + treat, data = rats_data)
-summary(lm_fit)
+lm_fit_sum <- summary(lm_fit)
 # Extract the F-tests and p-values to compare against the anova(m_rats) results
 drop1(lm_fit, test = "F")
+
+var_p <-  drop1(lm_fit, test = "F")[6] %>% as.data.frame()
 
 summary(m2)
 summary(lm_fit)

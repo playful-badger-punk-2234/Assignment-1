@@ -21,8 +21,9 @@ par(mfrow = c(1, 1))
 
 # Interaction between brand and species model
 m1 <- lmer(log(y_min) ~ brand*species + bark + (1 | team) + (1 | saw_id), data = df)
-summary(m1)
+
 drop1(m1, test = "F")
+drop1_m1 <- drop1(m1, test = "F")
 
 # Additive Model
 m2_log <- lmer(log(y_min) ~ brand + species + bark + (1 | team) + (1 | saw_id), data = df)
