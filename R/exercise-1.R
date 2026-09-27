@@ -156,12 +156,6 @@ library(lme4)
 
 m_lmer<-lmer(perc ~ (1|bull), data=df)
 summary(m_lmer) #A lot of information!
-m_lmer@beta
-
-
-
-
-summary(m_lmer)
 
 estimate <- m_lmer@beta
 
@@ -173,19 +167,21 @@ confint(m_lmer, method = "profile")
 # Calculate confidence interval
 conf <- confint(m_lmer, parm = "(Intercept)", method = "profile")
 
-estimate <- paste0(round(m_lmer@beta, 2), "% (", round(conf[1,1], 2), " - ", round(conf[1,2], 2), ")")
+estimate <- paste0(round(m_lmer@beta, 2), "% (95% CI: ", round(conf[1,1], 2), " - ", round(conf[1,2], 2), ")")
 
 VarCorr(m_lmer)
 
 vc <- as.data.frame(VarCorr(m_lmer))
 
-sigma_bull  <- vc$vcov[1]
 sigma_within <- vc$vcov[2]
+sigma_bull  <- vc$vcov[1]
 
 ICC <- sigma_bull / (sigma_bull + sigma_within)
 ICC
+h <- 4 * sigma_bull /
+  (sigma_bull + sigma_within)
 
-
+round(h * 100, 0)
 
 76.8+248.7 #=325.5
 

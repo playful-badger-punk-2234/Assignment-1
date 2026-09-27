@@ -1,7 +1,0 @@
----
-title: "Assignment 1 - 02429 Analysis of correlated data: Linear mixed models"
-subtitle: "Due date: Monday September 28, 2026"
-format: pdf
----
-
-## Exercise II. Experimental data on surgery.
