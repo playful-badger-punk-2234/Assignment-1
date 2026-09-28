@@ -3,7 +3,6 @@ title: "Assignment 1 - 02429 Analysis of correlated data: Linear mixed models"
 subtitle: "Group 4"
 date: "Monday September 28, 2026"
 author: "Lachlan Casey, Boglárka Dorottya Kováts, Rune Ringgaard Jørgensen"
-header: "Assignment 1 - Group 4"
 format:
   pdf:
     geometry:
@@ -14,6 +13,11 @@ format:
     include-in-header:
       text: |
         \usepackage{float}
+        \usepackage{fancyhdr}
+        \pagestyle{fancy}
+        \fancyhf{}
+        \fancyhead[C]{Assignment 1 - Group 4}
+        \fancyfoot[C]{\thepage}
 execute: 
   echo: false
 bibliography: references.bib
@@ -253,7 +257,6 @@ lmcoef %>%
 
 ```
 
-
 F-test of the linear model, @eq-rat-lm, shows that reducing the model by removing *site* is possible ($p$ = `r signif(var_p[2,1], 3)`) and that *treatment* is significant ($p$ = `r signif(var_p[3,1], 3)`).
 
 Conversely, as shown previously in the analysis of variance of the LMM model, @tbl-rat-anova, *site* is a statistically significant variable ($p$ = `r signif(lmm2_anova[1,6], 3)`) and *treatment* is not significant ($p$ = `r signif(lmm2_anova[2,6], 3)`), thus showing the opposite result of @eq-rat-lm.
@@ -293,54 +296,210 @@ $$ {#eq-saw-lmm}
 
 Where:
 
-- $\log\left( y_{ijklm} \right)$ is the log-transformed cutting time for the $i$-th brand, $j$-th bark status, $k$-th species, used by the $l$-th team, with the $m$-th specific physical saw.
+- $\log\left( y_{ijklm} \right)$ is the log-transformed cutting time for the $i$-th *brand*, $j$-th *bark* status, $k$-th *species*, used by the $l$-th *team*, with the $m$-th specific physical *saw.*
 
 - $\mu$ is the overall average log-transformed cutting time.
 
-- $\alpha_{i}$ is the fixed main effect of the $i$-th saw brand.
+- $\alpha_{i}$ is the fixed main effect of the $i$-th saw *brand.*
 
-- $\beta_{j}$ is the fixed main effect of the $j$-th bark status (e.g., bark vs. no bark).
+- $\beta_{j}$ is the fixed main effect of the $j$-th *bark* status (e.g., bark vs. no bark).
 
-- $(\alpha\beta)_{ij}$ is the fixed interaction effect between the $i$-th saw brand and the $j$-th bark status, representing whether the time saved by debarking depends on which brand of saw is used.
+- $(\alpha\beta)_{ij}$ is the fixed interaction effect between the $i$-th saw *brand* and the $j$-th *bark* status, representing whether the time saved by debarking depends on which brand of saw is used.
 
-- $\gamma_{k}$ is the fixed main effect of the $k$-th wood species (e.g., spruce, pine).
+- $\gamma_{k}$ is the fixed main effect of the $k$-th wood *species* (e.g., spruce, pine).
 
 - $t_{l}$ is the random effect of the $l$-th team, assumed to be normally distributed with a mean of zero and a variance of $\sigma_{team}^{2}$ ($t_{l} \sim N\left( 0,\sigma_{team}^{2} \right)$).
 
-- $s_{m}$ is the random effect of the $m$-th physical saw, assumed to be normally distributed with a mean of zero and a variance of $\sigma_{saw}^{2}$ ($s_{m} \sim N\left( 0,\sigma_{saw}^{2} \right)$).
+- $s_{m}$ is the random effect of the $m$-th physical *saw*, assumed to be normally distributed with a mean of zero and a variance of $\sigma_{saw}^{2}$ ($s_{m} \sim N\left( 0,\sigma_{saw}^{2} \right)$).
 
 - $\epsilon_{ijklm}$ is the residual measurement error, assumed to be normally distributed with a mean of zero and a variance of $\sigma^{2}$ ($\epsilon_{ijklm} \sim N\left( 0,\sigma^{2} \right)$).
 
-Fitting this model shows the interaction is not necessary ($p$ = `r signif(drop1_m1[2,6], 3)`)  on the interaction when performing a F-test. Thus, the model is reduced to a final model, @eq-saw-final-lmm:
+ 
+
+Fitting this model shows the interaction is not necessary ($p$ = `r signif(drop1_m1[2,6], 3)`) on the interaction when performing a F-test. Thus, the model is reduced to a final model, @eq-saw-final-lmm:
 
 $$
 \log\left( y_{ijklm} \right) = \mu + \alpha_{i} + \beta_{j} + \gamma_{k} + t_{l} + s_{m} + \epsilon_{ijklm}
 $$ {#eq-saw-final-lmm}
 
-![](media/media/image12.png){width="4.386502624671916in" height="2.113063210848644in"}
-
 ## Findings from the additive model
 
 ```{r}
+#| label: tbl-fixed-eff-saw-m2
+#| tbl-cap: Fixed effects of @eq-saw-final-lmm
 
+sum_m2 <- summary(m2)
+
+sum_m2$coefficients %>% 
+  as.data.frame() %>% 
+  rename("p-value" = last_col()) %>% 
+  kable()
+
+```
+
+As seen @tbl-fixed-eff-saw-m2, *brand* appears to be not significant, however, both *species* and *bark* show statistical significance.
+
+```{r}
+#| label: tbl-saw-random
+#| tbl-cap: Random effects of @eq-saw-final-lmm
+
+rando <- as.data.frame(VarCorr(m2))
+
+rando %>% 
+  select(
+    Groups = grp,
+    Name = var1,
+    Variance = vcov,
+    "Std.Dev." = sdcor
+  ) %>% 
+  kable()
 
 
 ```
 
-Fixed Effects : Brand appears to not be significantly significant with the others being significant.
+@tbl-saw-random shows *saw_id* to have a very small variance, indicating it has very little effect on the final result, e.g., using choice of saw makes little difference.
 
-Random Effects : Saw_id has very small variance indicating it has very little effect on the final results. E.g using saw A or D makes very small differences.
+## Task i)
 
-Part i) ![](media/media/image13.png){width="6.268055555555556in" height="3.7569444444444446in"}
+```{r}
+#| label: fig-saw-means
+#| fig-cap: Comparison of *saw* brands.
+#| fig-asp: .6
+#| fig-pos: H
 
-As can be seen all brnads perform fairly similar and there can be no statistcall results in the difference of cutting time due to brand type. Confidence interval of all contrast contains 0.
 
-Part ii)
+e1t1plot
 
-![](media/media/image14.png){width="6.268055555555556in" height="3.7569444444444446in"}
+```
 
-It can be seen that bark is significantly significant reducing the cutting time by about 0.15 minutes with fairly high confidence not containg 0. Insert p-value
+As @fig-saw-means shows, all *brands* perform fairly similar and there can be no statistal results in the difference of cutting time due to brand type, as confidence intervals of all contrast contain 0.
 
-Part iii)![](media/media/image15.png){width="6.268055555555556in" height="3.7569444444444446in"}
+## Task ii)
 
-All species are statistically significant. Insert p-values
+```{r}
+#| label: fig-bark-means
+#| fig-cap: Comparison of *bark*.
+#| fig-asp: .6
+#| fig-pos: H
+
+e3t2plot
+
+```
+@fig-bark-means shows that *bark* is significantly different, reducing the cutting time by about 0.15 minutes with fairly high confidence, not contaning 0 ($p$ = <0.0001).
+
+## Task iii)
+
+```{r}
+#| label: fig-species-means
+#| fig-cap: Comparison of *species*.
+#| fig-asp: .6
+#| fig-pos: H
+
+par(mai=c(1, 1, .25, 0.5))
+
+e3t3plot
+
+```
+
+According to @fig-species-means, *species* has a statistically significant different effect on cutting times, which is further underlined by the $p$-values shown in @tbl-species-dif.
+
+```{r}
+#| label: tbl-species-dif
+#| tbl-cap: Effect of *species* on cutting times.
+
+species_df %>% 
+  kable()
+
+```
+
+\clearpage
+
+\appendix
+
+# Appendix: Output
+
+```{r}
+#| include: false
+
+source("R/exercise_1.R")
+```
+
+```{r}
+#| echo: true
+#| message: true
+
+final_model <- m1
+
+# ranova
+ranova(final_model)
+
+# drop1
+drop1(final_model, test="F")
+
+# summary
+summary(final_model)
+
+```
+
+
+```{r}
+#| include: false
+
+source("R/exercise_2.R")
+```
+
+```{r}
+#| echo: true
+
+final_model <- m2
+
+# ranova
+ranova(final_model)
+
+# drop1
+drop1(final_model, test="F")
+
+# summary
+summary(final_model)
+
+```
+
+```{r}
+#| include: false
+
+source("R/exercise_3.R")
+```
+
+```{r}
+#| echo: true
+
+final_model <- m2
+
+# ranova
+ranova(final_model)
+
+# drop1
+drop1(final_model, test="F")
+
+# summary
+summary(final_model)
+
+```
+\clearpage
+
+# Appendix: Full R code
+
+```{r}
+#| echo: false
+#| results: asis
+
+files <- list.files("R/", pattern = "\\.R$", full.names = TRUE)
+
+for (f in files) {
+  cat("\n\n## ", basename(f), "\n\n", sep = "")
+  cat("```{.r}\n")
+  cat(readLines(f), sep = "\n")
+  cat("\n```\n")
+}
+```
+

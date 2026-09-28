@@ -35,6 +35,8 @@ points(1:6, means, pch = 23, bg = "black")
 # Fit the linear mixed model
 m1 <- lmer(perc ~ 1 + (1|bull), data = df)
 
+drop1(m1, test = "F")
+
 # Calculate confidence interval
 conf <- confint(m1, parm = "(Intercept)", method = "profile")
 estimate <- paste0(round(m1@beta, 2), "%, 95% CI [", round(conf[1,1], 2), "%, ", round(conf[1,2], 2), "%]")

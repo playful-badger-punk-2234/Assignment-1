@@ -2,12 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-
 /.quarto/
 **/*.quarto_ipynb
-
 exercise_1.pdf
 exercise_2.pdf
 exercise_3.pdf
-
 *_files/
+Assignment1_group4_autumn2026.pdf

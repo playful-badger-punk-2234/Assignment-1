@@ -40,9 +40,9 @@ print(brand_eff_normal)
 # Plot side by side
 red_line <- geom_vline(xintercept = 0, linetype = "dashed", color = "red")
 p1 <- plot(brand_eff_normal$emmeans) +  ggtitle("95% C.I of Brand Means") +
-  theme(plot.title = element_text(hjust = 0.5, size = 15)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 p2 <- plot(brand_eff$contrasts) +  ggtitle("95% C.I of Brand Contrast") +
-  theme(plot.title = element_text(hjust = 0.5, size = 15)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 e1t1plot <- p1 + p2 + red_line
 
 ## Task ii ------------------------------------------------------------------
@@ -53,9 +53,9 @@ print(bark_eff)
 
 # Plot side by side
 p1 <- plot(bark_eff_normal$emmeans) +  ggtitle("95% C.I of Bark Means") +
-  theme(plot.title = element_text(hjust = 0.5)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 p2 <- plot(bark_eff$contrasts) +  ggtitle("95% C.I of Bark Contrast") +
-  theme(plot.title = element_text(hjust = 0.5)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 e3t2plot <- p1 + p2 + red_line
 
 ## Task iii ------------------------------------------------------------------
@@ -65,10 +65,16 @@ species_eff <- emmeans(m2, pairwise ~ species, type = "response")
 species_eff_normal <- emmeans(m2_log, pairwise ~ species, type = "response")
 print(species_eff)
 
+species_df <- species_eff$contrasts %>%
+  as.data.frame() %>%
+  mutate(
+    p.value = ifelse(p.value < 0.001, "<0.001", as.character(p.value))
+  )
+
 # Plot side by side
 p1 <- plot(species_eff$emmeans) +  ggtitle("95% C.I of Species Means") +
-  theme(plot.title = element_text(hjust = 0.5, size = 15)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 p2 <- plot(species_eff$contrasts) +  ggtitle("95% C.I of Species Contrast") +
-  theme(plot.title = element_text(hjust = 0.5, size = 15)) # Centers the title
+  theme(plot.title = element_text(hjust = 0.5, size = 10)) # Centers the title
 e3t3plot <- p1 + p2 + red_line
 
